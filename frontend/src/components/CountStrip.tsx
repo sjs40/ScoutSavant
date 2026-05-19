@@ -2,7 +2,13 @@ import type { CountCellRow } from "../types/api";
 import { pitchColor, ALL_COUNTS } from "../constants";
 import { useFilterStore } from "../store/filterStore";
 
-export function CountStrip({ data }: { data: CountCellRow[] | null | undefined }) {
+export function CountStrip({
+  data,
+  isFetching,
+}: {
+  data: CountCellRow[] | null | undefined;
+  isFetching?: boolean;
+}) {
   const { count: activeCount, setFilter } = useFilterStore();
 
   const cellMap = Object.fromEntries((data ?? []).map((c) => [c.count, c]));
@@ -15,7 +21,7 @@ export function CountStrip({ data }: { data: CountCellRow[] | null | undefined }
   };
 
   return (
-    <div className="bg-surface rounded-lg p-3 flex flex-col gap-2">
+    <div className={`bg-surface rounded-lg p-3 flex flex-col gap-2 transition-opacity ${isFetching && data ? "opacity-50" : ""}`}>
       <span className="text-text2 font-mono text-xs">Count Distribution</span>
       <div className="flex gap-1">
         {ALL_COUNTS.map((count) => {

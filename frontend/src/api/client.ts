@@ -4,14 +4,14 @@ export function apiError(status: number, message: string): Error & { status: num
   return err;
 }
 
-export async function apiFetch<T>(
-  path: string,
-  signal?: AbortSignal
-): Promise<T> {
+export async function apiFetch<T>(path: string, signal?: AbortSignal): Promise<T> {
   const res = await fetch(path, { signal });
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
-    throw apiError(res.status, text);
+    if (res.status === 429) {
+      throw apiError(429, "Data source rate limited — try again in 60s");
+    }
+    throw apiError(res.status, text || `HTTP ${res.status}`);
   }
   return res.json() as Promise<T>;
 }
@@ -27,4 +27,13 @@ export function buildQuery(params: Record<string, unknown>): string {
     }
   }
   return q.toString() ? `?${q.toString()}` : "";
+}
+
+export function friendlyError(err: unknown): string {
+  if (err instanceof Error) {
+    const e = err as Error & { status?: number };
+    if (e.status === 429) return "Rate limited — try again in 60s";
+    return e.message || "Unknown error";
+  }
+  return String(err);
 }

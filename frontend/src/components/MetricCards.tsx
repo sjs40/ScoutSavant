@@ -9,6 +9,7 @@ interface CardProps {
   deltaFormat?: (v: number) => string;
   higherIsBetter?: boolean;
   threshold?: { green: number; red: number };
+  minDelta?: number;
 }
 
 function fmt(v: number | null | undefined, f: (n: number) => string): string {
@@ -16,13 +17,13 @@ function fmt(v: number | null | undefined, f: (n: number) => string): string {
 }
 
 function MetricCard({
-  label, abbr, value, delta, format, deltaFormat, higherIsBetter = true, threshold,
+  label, abbr, value, delta, format, deltaFormat, higherIsBetter = true, threshold, minDelta,
 }: CardProps) {
   const dFmt = deltaFormat ?? format;
-  const sign = delta !== null && delta !== undefined ? (delta > 0 ? "+" : "") : "";
-  const positive = delta !== null && delta !== undefined
-    ? delta * (higherIsBetter ? 1 : -1) > 0
-    : null;
+  const showDelta = delta !== null && delta !== undefined &&
+    (minDelta === undefined || Math.abs(delta) >= minDelta);
+  const sign = showDelta && delta! > 0 ? "+" : "";
+  const positive = showDelta ? delta! * (higherIsBetter ? 1 : -1) > 0 : null;
 
   let valueColor = "text-text";
   if (threshold && value !== null && value !== undefined) {
@@ -43,7 +44,7 @@ function MetricCard({
       <span className={`font-mono text-xl font-semibold ${valueColor}`}>
         {fmt(value, format)}
       </span>
-      {delta !== null && delta !== undefined && (
+      {showDelta && (
         <span className={`font-mono text-xs ${positive ? "text-green" : "text-red"}`}>
           {sign}{fmt(delta, dFmt)} vs season
         </span>
@@ -62,7 +63,17 @@ const mph = (v: number) => `${v.toFixed(1)}`;
 const xwoba = (v: number) => v.toFixed(3);
 const rv = (v: number) => (v > 0 ? "+" : "") + v.toFixed(1);
 
-export function MetricCards({ data, loading }: { data: SummaryResponse | null | undefined; loading?: boolean }) {
+export function MetricCards({
+  data,
+  loading,
+  isFetching,
+  error,
+}: {
+  data: SummaryResponse | null | undefined;
+  loading?: boolean;
+  isFetching?: boolean;
+  error?: string | null;
+}) {
   if (loading && !data) {
     return (
       <div className="flex gap-3 flex-wrap">
@@ -70,10 +81,17 @@ export function MetricCards({ data, loading }: { data: SummaryResponse | null | 
       </div>
     );
   }
+  if (error && !data) {
+    return (
+      <div className="flex gap-3 flex-wrap">
+        <span className="font-mono text-xs text-red px-1">{error}</span>
+      </div>
+    );
+  }
   if (!data) return null;
 
   return (
-    <div className="flex gap-3 flex-wrap">
+    <div className={`flex gap-3 flex-wrap transition-opacity ${isFetching && data ? "opacity-50" : ""}`}>
       <MetricCard
         label="Pitches"
         value={data.pitch_count}
@@ -87,6 +105,7 @@ export function MetricCards({ data, loading }: { data: SummaryResponse | null | 
         delta={data.avg_velocity_delta}
         format={mph}
         higherIsBetter={true}
+        minDelta={0.3}
       />
       <MetricCard
         label="Strike%"
@@ -97,6 +116,7 @@ export function MetricCards({ data, loading }: { data: SummaryResponse | null | 
         deltaFormat={pctDelta}
         higherIsBetter={true}
         threshold={{ green: 0.65, red: 0.58 }}
+        minDelta={0.005}
       />
       <MetricCard
         label="Zone%"
@@ -107,6 +127,7 @@ export function MetricCards({ data, loading }: { data: SummaryResponse | null | 
         deltaFormat={pctDelta}
         higherIsBetter={true}
         threshold={{ green: 0.50, red: 0.40 }}
+        minDelta={0.005}
       />
       <MetricCard
         label="Whiff%"
@@ -117,6 +138,7 @@ export function MetricCards({ data, loading }: { data: SummaryResponse | null | 
         deltaFormat={pctDelta}
         higherIsBetter={true}
         threshold={{ green: 0.30, red: 0.20 }}
+        minDelta={0.005}
       />
       <MetricCard
         label="Chase%"
@@ -127,6 +149,7 @@ export function MetricCards({ data, loading }: { data: SummaryResponse | null | 
         deltaFormat={pctDelta}
         higherIsBetter={true}
         threshold={{ green: 0.32, red: 0.24 }}
+        minDelta={0.005}
       />
       <MetricCard
         label="CSW%"
@@ -137,6 +160,7 @@ export function MetricCards({ data, loading }: { data: SummaryResponse | null | 
         deltaFormat={pctDelta}
         higherIsBetter={true}
         threshold={{ green: 0.32, red: 0.26 }}
+        minDelta={0.005}
       />
       <MetricCard
         label="Hard Hit%"
@@ -147,6 +171,7 @@ export function MetricCards({ data, loading }: { data: SummaryResponse | null | 
         deltaFormat={pctDelta}
         higherIsBetter={false}
         threshold={{ green: 0.35, red: 0.42 }}
+        minDelta={0.005}
       />
       <MetricCard
         label="xwOBA"
@@ -156,6 +181,7 @@ export function MetricCards({ data, loading }: { data: SummaryResponse | null | 
         format={xwoba}
         higherIsBetter={false}
         threshold={{ green: 0.280, red: 0.340 }}
+        minDelta={0.003}
       />
       <MetricCard
         label="Avg EV"
@@ -165,6 +191,7 @@ export function MetricCards({ data, loading }: { data: SummaryResponse | null | 
         format={mph}
         higherIsBetter={false}
         threshold={{ green: 86, red: 92 }}
+        minDelta={0.3}
       />
       <MetricCard
         label="Run Val"

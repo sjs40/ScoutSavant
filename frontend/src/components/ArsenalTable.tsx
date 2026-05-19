@@ -206,11 +206,19 @@ function ByStandTab({ data }: { data: UsageResponse }) {
   );
 }
 
-export function ArsenalTable({ data }: { data: UsageResponse | null }) {
+export function ArsenalTable({
+  data,
+  isFetching,
+  error,
+}: {
+  data: UsageResponse | null;
+  isFetching?: boolean;
+  error?: string | null;
+}) {
   const [tab, setTab] = useState<Tab>("pitch");
 
   return (
-    <div className="bg-surface rounded-lg p-4 flex flex-col gap-3 flex-1 min-w-0 overflow-hidden">
+    <div className={`bg-surface rounded-lg p-4 flex flex-col gap-3 flex-1 min-w-0 overflow-hidden transition-opacity ${isFetching && data ? "opacity-50" : ""}`}>
       <div className="flex items-center gap-1 border-b border-border pb-2">
         <span className="text-text2 font-mono text-sm mr-2">Arsenal</span>
         {TABS.map((t) => (
@@ -228,12 +236,16 @@ export function ArsenalTable({ data }: { data: UsageResponse | null }) {
         ))}
       </div>
 
-      {!data && (
+      {!data && !error && (
         <div className="flex flex-col gap-2">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-6 bg-surface2 rounded animate-pulse" />
           ))}
         </div>
+      )}
+
+      {!data && error && (
+        <span className="font-mono text-xs text-red">{error}</span>
       )}
 
       {data && tab === "pitch" && <ByPitchTab data={data} />}

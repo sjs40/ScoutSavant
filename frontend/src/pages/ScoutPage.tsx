@@ -10,7 +10,7 @@ import { SequenceMatrix } from "../components/SequenceMatrix";
 import { CountStrip } from "../components/CountStrip";
 
 export function ScoutPage() {
-  const { summary, pitches, usage, sequences, counts, isLoading, isInitialLoading } = useDashboardData();
+  const { summary, pitches, usage, sequences, counts, isLoading, isInitialLoading, errors } = useDashboardData();
   const pitcher_id = useFilterStore((s) => s.pitcher_id);
 
   return (
@@ -31,23 +31,41 @@ export function ScoutPage() {
             </div>
           ) : (
             <>
-              <MetricCards data={summary} loading={isInitialLoading} />
+              <MetricCards
+                data={summary}
+                loading={isInitialLoading}
+                isFetching={isLoading}
+                error={errors.summary}
+              />
 
               {/* Main panel: StrikeZone | Arsenal+Sequences */}
               <div className="flex gap-4 flex-1 min-h-0">
                 {/* Strike zone map — fixed 340px */}
-                <StrikeZoneMap data={pitches ?? null} loading={isLoading} />
+                <StrikeZoneMap
+                  data={pitches ?? null}
+                  loading={isInitialLoading}
+                  isFetching={isLoading}
+                  error={errors.pitches}
+                />
 
                 {/* Right side: Arsenal + Sequence Matrix stacked, then CountStrip */}
                 <div className="flex-1 flex flex-col gap-4 min-w-0 overflow-hidden">
                   <div className="flex gap-4 flex-1 min-h-0 overflow-hidden">
-                    <ArsenalTable data={usage ?? null} />
+                    <ArsenalTable
+                      data={usage ?? null}
+                      isFetching={isLoading}
+                      error={errors.usage}
+                    />
                     <div className="w-[280px] shrink-0 overflow-hidden">
-                      <SequenceMatrix data={sequences} />
+                      <SequenceMatrix
+                        data={sequences}
+                        isFetching={isLoading}
+                        error={errors.sequences}
+                      />
                     </div>
                   </div>
 
-                  <CountStrip data={counts} />
+                  <CountStrip data={counts} isFetching={isLoading} />
                 </div>
               </div>
             </>

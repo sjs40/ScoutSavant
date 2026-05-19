@@ -11,6 +11,8 @@ const MAX_DOTS = 500;
 interface Props {
   data: PitchesResponse | null;
   loading?: boolean;
+  isFetching?: boolean;
+  error?: string | null;
 }
 
 interface TooltipState {
@@ -25,6 +27,7 @@ function PitchLegend({ pitches }: { pitches: Pitch[] }) {
     if (p.pitch_type) counts[p.pitch_type] = (counts[p.pitch_type] ?? 0) + 1;
   }
   const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const hasPartialPA = pitches.some((p) => p.pa_complete === false);
   if (entries.length === 0) return null;
 
   return (
@@ -39,11 +42,17 @@ function PitchLegend({ pitches }: { pitches: Pitch[] }) {
           <span className="text-text3">{cnt}</span>
         </div>
       ))}
+      {hasPartialPA && (
+        <div className="flex items-center gap-1 font-mono text-[10px] text-text3">
+          <span className="text-text3">◌</span>
+          <span className="text-text3">Active PA</span>
+        </div>
+      )}
     </div>
   );
 }
 
-export function StrikeZoneMap({ data, loading }: Props) {
+export function StrikeZoneMap({ data, loading, isFetching, error }: Props) {
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
 
   const pitches = data?.pitches ?? [];
@@ -55,7 +64,10 @@ export function StrikeZoneMap({ data, loading }: Props) {
   };
 
   return (
-    <div className="bg-surface rounded-lg p-4 flex flex-col gap-2 shrink-0" style={{ width: 340 }}>
+    <div
+      className={`bg-surface rounded-lg p-4 flex flex-col gap-2 shrink-0 transition-opacity ${isFetching && data ? "opacity-50" : ""}`}
+      style={{ width: 340 }}
+    >
       <div className="flex items-center justify-between">
         <span className="text-text2 font-mono text-sm">Pitch Location</span>
         {clipped && (
@@ -71,6 +83,15 @@ export function StrikeZoneMap({ data, loading }: Props) {
           style={{ width: CANVAS_W, height: CANVAS_H }}
         >
           <span className="text-text3 font-mono text-sm animate-pulse">Loading…</span>
+        </div>
+      )}
+
+      {error && !data && (
+        <div
+          className="flex items-center justify-center"
+          style={{ width: CANVAS_W, height: CANVAS_H }}
+        >
+          <span className="text-red font-mono text-xs text-center px-4">{error}</span>
         </div>
       )}
 

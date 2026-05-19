@@ -5,7 +5,22 @@ function pct(v: number | null | undefined) {
   return v !== null && v !== undefined ? `${(v * 100).toFixed(0)}%` : "—";
 }
 
-export function SequenceMatrix({ data }: { data: SequencesResponse | null | undefined }) {
+export function SequenceMatrix({
+  data,
+  isFetching,
+  error,
+}: {
+  data: SequencesResponse | null | undefined;
+  isFetching?: boolean;
+  error?: string | null;
+}) {
+  if (!data && error) {
+    return (
+      <div className="bg-surface rounded-lg p-4 flex items-center justify-center h-40">
+        <span className="font-mono text-xs text-red text-center">{error}</span>
+      </div>
+    );
+  }
   if (!data) {
     return (
       <div className="bg-surface rounded-lg p-4 text-text3 font-mono text-sm animate-pulse h-40" />
@@ -26,7 +41,7 @@ export function SequenceMatrix({ data }: { data: SequencesResponse | null | unde
   );
 
   return (
-    <div className="bg-surface rounded-lg p-4 flex flex-col gap-4">
+    <div className={`bg-surface rounded-lg p-4 flex flex-col gap-4 transition-opacity ${isFetching ? "opacity-50" : ""}`}>
       <span className="text-text2 font-mono text-sm">Pitch Sequences</span>
 
       {pitchTypes.length === 0 ? (

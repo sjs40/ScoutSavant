@@ -1,17 +1,17 @@
 export const PITCH_COLORS: Record<string, string> = {
-  FF: "#3b82f6",
-  SL: "#ef4444",
-  CH: "#22c55e",
-  CU: "#a855f7",
-  SI: "#06b6d4",
-  FC: "#f97316",
-  FS: "#ec4899",
-  KC: "#facc15",
-  ST: "#84cc16",
-  SV: "#f43f5e",
+  FF: "var(--pitch-ff)",
+  SL: "var(--pitch-sl)",
+  CH: "var(--pitch-ch)",
+  CU: "var(--pitch-cu)",
+  SI: "var(--pitch-si)",
+  FC: "var(--pitch-fc)",
+  FS: "var(--pitch-fs)",
+  KC: "var(--pitch-kc)",
+  ST: "var(--pitch-st)",
+  SV: "var(--pitch-sv)",
 };
 
-export const DEFAULT_PITCH_COLOR = "#8b95a3";
+export const DEFAULT_PITCH_COLOR = "var(--text3)";
 
 export function pitchColor(type: string | null | undefined): string {
   if (!type) return DEFAULT_PITCH_COLOR;

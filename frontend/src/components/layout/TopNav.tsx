@@ -16,6 +16,20 @@ function isToday(dateStr: string | null): boolean {
   return dateStr.slice(0, 10) === new Date().toISOString().slice(0, 10);
 }
 
+function Spinner() {
+  return (
+    <svg className="animate-spin w-3 h-3 shrink-0" viewBox="0 0 24 24" fill="none">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" opacity="0.25" />
+      <path
+        d="M12 2a10 10 0 0110 10"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function TopNav() {
   const store = useFilterStore();
   const ingest = useIngest();
@@ -33,14 +47,16 @@ export function TopNav() {
       const result = await ingest.refreshGame(store.pitcher_id, store.game_pk, season);
       store.setIngestMeta(result.last_pulled_at ?? null, result.row_count);
       queryClient.invalidateQueries();
-    } catch { /* surface error via ingest.error */ }
+    } catch { /* ingest.error set by hook */ }
   };
 
   return (
     <nav className="h-12 bg-surface border-b border-border flex items-center px-4 gap-6 shrink-0 z-10">
       {/* Logo + subtitle */}
       <div className="flex items-baseline gap-2 shrink-0">
-        <span className="font-logo text-accent text-2xl tracking-wider leading-none">ScoutSavant</span>
+        <span className="font-logo text-accent text-2xl tracking-wider leading-none">
+          ScoutSavant
+        </span>
         <span className="font-mono text-text3 text-[10px] uppercase tracking-widest select-none">
           / Pitcher Scout
         </span>
@@ -63,18 +79,19 @@ export function TopNav() {
         ))}
       </div>
 
-      {/* Right: metadata + live + refresh */}
+      {/* Right: timestamp · live badge · refresh */}
       <div className="flex items-center gap-3 shrink-0">
         {lastTime && (
           <span className="font-mono text-[11px] text-text3">
             {lastTime}
             {rowCount !== null && (
-              <span className="ml-1">· {rowCount.toLocaleString()} pit</span>
+              <span className="ml-1 text-text3">· {rowCount.toLocaleString()} pit</span>
             )}
           </span>
         )}
 
-        {ingest.loading && (
+        {/* Ingesting indicator (from FilterPanel ingest, not refresh) */}
+        {ingest.loading && !canRefresh && (
           <span className="font-mono text-[11px] text-accent animate-pulse">Ingesting…</span>
         )}
 
@@ -92,9 +109,21 @@ export function TopNav() {
           <button
             onClick={handleRefresh}
             disabled={ingest.loading}
-            className="font-mono text-xs px-3 py-1 rounded bg-surface3 text-text2 hover:text-text border border-border disabled:opacity-40 transition-colors"
+            title="Re-pull this game from Baseball Savant"
+            className={`font-mono text-xs px-3 py-1 rounded border transition-colors flex items-center gap-1.5 disabled:opacity-50 ${
+              live
+                ? "bg-red/10 text-red border-red/30 hover:bg-red/20"
+                : "bg-surface3 text-text2 border-border hover:text-text"
+            }`}
           >
-            Refresh
+            {ingest.loading ? (
+              <>
+                <Spinner />
+                <span>Refreshing…</span>
+              </>
+            ) : (
+              "Refresh"
+            )}
           </button>
         )}
       </div>
