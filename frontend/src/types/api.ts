@@ -40,6 +40,8 @@ export interface PitchUsageRow {
   csw_pct: number | null;
   zone_pct: number | null;
   xwoba: number | null;
+  hard_hit_pct: number | null;
+  chase_pct: number | null;
 }
 
 export interface CountBucket {

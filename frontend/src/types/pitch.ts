@@ -18,6 +18,7 @@ export interface Pitch {
   count: string;
   stand: "L" | "R" | null;
   inning: number | null;
+  zone: number | null;
   description: string | null;
   events: string | null;
   estimated_ba_using_speedangle: number | null;

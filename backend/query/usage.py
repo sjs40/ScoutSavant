@@ -17,12 +17,14 @@ def query(p: FilterParams) -> dict:
             f"""
             SELECT
                 pitch_type,
-                COUNT(*)                                                AS cnt,
-                SUM(CAST(is_whiff AS INTEGER))                          AS whiffs,
-                AVG(release_speed)                                      AS avg_velo,
-                SUM(CAST(is_csw AS INTEGER))                            AS csw,
-                SUM(CASE WHEN zone >= 1 AND zone <= 9 THEN 1 ELSE 0 END) AS in_zone,
-                AVG(estimated_woba_using_speedangle)                    AS xwoba
+                COUNT(*)                                                    AS cnt,
+                SUM(CAST(is_whiff AS INTEGER))                              AS whiffs,
+                AVG(release_speed)                                          AS avg_velo,
+                SUM(CAST(is_csw AS INTEGER))                                AS csw,
+                SUM(CASE WHEN zone >= 1 AND zone <= 9 THEN 1 ELSE 0 END)   AS in_zone,
+                AVG(estimated_woba_using_speedangle)                        AS xwoba,
+                SUM(CAST(is_hard_hit AS INTEGER))                           AS hard_hits,
+                SUM(CAST(is_chase AS INTEGER))                              AS chases
             FROM {tbl} WHERE {where}
             GROUP BY pitch_type
             ORDER BY cnt DESC
@@ -62,6 +64,8 @@ def query(p: FilterParams) -> dict:
             "csw_pct": round(r[4] / r[1], 4) if r[1] else None,
             "zone_pct": round(r[5] / r[1], 4) if r[1] else None,
             "xwoba": round(r[6], 3) if r[6] is not None else None,
+            "hard_hit_pct": round(r[7] / r[1], 4) if r[1] else None,
+            "chase_pct": round(r[8] / r[1], 4) if r[1] else None,
         }
         for r in by_pitch_rows
     ]
@@ -84,14 +88,16 @@ def query(p: FilterParams) -> dict:
         s, pt, cnt, whiffs, avg_velo = r
         stand_totals[s] = stand_totals.get(s, 0) + cnt
         stand_groups.setdefault(s, []).append(
-            {"pitch_type": pt, "count": cnt, "whiff_count": whiffs, "avg_velocity": round(avg_velo, 1) if avg_velo else None}
+            {"pitch_type": pt, "count": cnt, "whiff_count": whiffs,
+             "avg_velocity": round(avg_velo, 1) if avg_velo else None}
         )
     by_stand = [
         {
             "stand": s,
             "total": stand_totals[s],
             "by_pitch_type": [
-                {**row, "usage_pct": round(row["count"] / stand_totals[s], 4) if stand_totals[s] else 0,
+                {**row,
+                 "usage_pct": round(row["count"] / stand_totals[s], 4) if stand_totals[s] else 0,
                  "whiff_pct": round(row["whiff_count"] / row["count"], 4) if row["count"] else None}
                 for row in rows
             ],
