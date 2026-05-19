@@ -10,7 +10,7 @@ import { SequenceMatrix } from "../components/SequenceMatrix";
 import { CountStrip } from "../components/CountStrip";
 
 export function ScoutPage() {
-  const { summary, pitches, usage, sequences, counts, loading } = useDashboardData();
+  const { summary, pitches, usage, sequences, counts, isLoading, isInitialLoading } = useDashboardData();
   const pitcher_id = useFilterStore((s) => s.pitcher_id);
 
   return (
@@ -28,11 +28,11 @@ export function ScoutPage() {
             </div>
           ) : (
             <>
-              <MetricCards data={summary} />
+              <MetricCards data={summary} loading={isInitialLoading} />
 
               <div className="flex gap-4 items-start">
-                <StrikeZoneMap data={pitches} loading={loading} />
-                <ArsenalTable data={usage} />
+                <StrikeZoneMap data={pitches ?? null} loading={isLoading} />
+                <ArsenalTable data={usage ?? null} />
               </div>
 
               <div className="flex gap-4 items-start">

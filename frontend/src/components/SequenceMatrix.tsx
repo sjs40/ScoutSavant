@@ -5,28 +5,25 @@ function pct(v: number | null | undefined) {
   return v !== null && v !== undefined ? `${(v * 100).toFixed(0)}%` : "—";
 }
 
-export function SequenceMatrix({ data }: { data: SequencesResponse | null }) {
+export function SequenceMatrix({ data }: { data: SequencesResponse | null | undefined }) {
   if (!data) {
     return (
-      <div className="bg-surface rounded-lg p-4 text-text3 font-mono text-sm animate-pulse">
-        Loading…
-      </div>
+      <div className="bg-surface rounded-lg p-4 text-text3 font-mono text-sm animate-pulse h-40" />
     );
   }
 
   const pitchTypes = Array.from(
     new Set([
-      ...data.matrix.map((r) => r.prev),
-      ...data.matrix.map((r) => r.next),
+      ...Object.keys(data.matrix),
+      ...Object.values(data.matrix).flatMap((nexts) => Object.keys(nexts)),
     ])
-  ).filter(Boolean) as string[];
+  ).filter(Boolean);
 
-  const cellMap = new Map<string, (typeof data.matrix)[0]>();
-  data.matrix.forEach((r) => {
-    if (r.prev && r.next) cellMap.set(`${r.prev}|${r.next}`, r);
-  });
-
-  const total = data.matrix.reduce((sum, r) => sum + r.count, 0);
+  // Total pitches in matrix for usage% denominator
+  const total = Object.values(data.matrix).reduce(
+    (sum, nexts) => sum + Object.values(nexts).reduce((s, c) => s + c.count, 0),
+    0
+  );
 
   return (
     <div className="bg-surface rounded-lg p-4 flex flex-col gap-4">
@@ -54,7 +51,7 @@ export function SequenceMatrix({ data }: { data: SequencesResponse | null }) {
                     {prev}
                   </td>
                   {pitchTypes.map((next) => {
-                    const cell = cellMap.get(`${prev}|${next}`);
+                    const cell = data.matrix[prev]?.[next];
                     const usagePct = cell ? cell.count / total : 0;
                     return (
                       <td
@@ -88,16 +85,16 @@ export function SequenceMatrix({ data }: { data: SequencesResponse | null }) {
 
       {data.top_sequences.length > 0 && (
         <div>
-          <div className="text-text3 font-mono text-xs mb-2">Top Sequences</div>
+          <div className="text-text3 font-mono text-xs mb-2">Top Sequences (by whiff%)</div>
           <div className="flex flex-col gap-1">
-            {data.top_sequences.slice(0, 5).map((r, i) => (
+            {data.top_sequences.map((r, i) => (
               <div key={i} className="flex items-center gap-2 text-xs font-mono">
                 <span className="text-text3 w-4">{i + 1}.</span>
-                <span style={{ color: pitchColor(r.prev) }}>{r.prev}</span>
+                <span style={{ color: pitchColor(r.from) }}>{r.from}</span>
                 <span className="text-text3">→</span>
-                <span style={{ color: pitchColor(r.next) }}>{r.next}</span>
-                <span className="text-text2 ml-auto">{r.count}x</span>
-                <span className="text-text3">{pct(r.whiff_pct)} whiff</span>
+                <span style={{ color: pitchColor(r.to) }}>{r.to}</span>
+                <span className="text-text3 ml-1 text-[10px]">n={r.sample}</span>
+                <span className="text-text2 ml-auto">{pct(r.whiff_pct)} whiff</span>
               </div>
             ))}
           </div>

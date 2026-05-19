@@ -23,6 +23,7 @@ def init_schema(conn: duckdb.DuckDBPyConnection) -> None:
             count           VARCHAR,
             stand           VARCHAR,
             inning          INTEGER,
+            zone            INTEGER,
             description     VARCHAR,
             events          VARCHAR,
             estimated_ba_using_speedangle    FLOAT,
@@ -64,6 +65,7 @@ def init_schema(conn: duckdb.DuckDBPyConnection) -> None:
             count           VARCHAR,
             stand           VARCHAR,
             inning          INTEGER,
+            zone            INTEGER,
             description     VARCHAR,
             events          VARCHAR,
             estimated_ba_using_speedangle    FLOAT,
@@ -99,3 +101,7 @@ def init_schema(conn: duckdb.DuckDBPyConnection) -> None:
     conn.execute("CREATE INDEX IF NOT EXISTS idx_ps_pitcher_season ON pitches_season (pitcher_id, season)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_ps_game ON pitches_season (pitcher_id, game_pk)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_pg_pitcher_game ON pitches_game (pitcher_id, game_pk)")
+
+    # Migrations for existing tables
+    conn.execute("ALTER TABLE pitches_season ADD COLUMN IF NOT EXISTS zone INTEGER")
+    conn.execute("ALTER TABLE pitches_game ADD COLUMN IF NOT EXISTS zone INTEGER")

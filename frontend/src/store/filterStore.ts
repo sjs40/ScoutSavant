@@ -3,22 +3,31 @@ import { DEFAULT_FILTERS } from "../types/filters";
 import type { FilterState } from "../types/filters";
 
 interface FilterStore extends FilterState {
-  _trigger: number;
+  pitcher_name: string | null;
+  game_label: string | null;
+  game_date: string | null;
   setFilter: <K extends keyof FilterState>(key: K, value: FilterState[K]) => void;
+  setPitcher: (id: number, name: string) => void;
+  setGame: (game_pk: number, label: string, date: string) => void;
   clearFilters: () => void;
-  _bump: () => void;
 }
 
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-export const useFilterStore = create<FilterStore>((set, get) => ({
+export const useFilterStore = create<FilterStore>((set) => ({
   ...DEFAULT_FILTERS,
-  _trigger: 0,
+  pitcher_name: null,
+  game_label: null,
+  game_date: null,
 
   setFilter: (key, value) => {
     set({ [key]: value });
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => get()._bump(), 300);
+  },
+
+  setPitcher: (id, name) => {
+    set({ pitcher_id: id, pitcher_name: name });
+  },
+
+  setGame: (game_pk, label, date) => {
+    set({ game_pk, game_label: label, game_date: date });
   },
 
   clearFilters: () => {
@@ -31,9 +40,5 @@ export const useFilterStore = create<FilterStore>((set, get) => ({
       times_through_order: [],
       outcome_filter: [],
     });
-    if (debounceTimer) clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => get()._bump(), 300);
   },
-
-  _bump: () => set((s) => ({ _trigger: s._trigger + 1 })),
 }));

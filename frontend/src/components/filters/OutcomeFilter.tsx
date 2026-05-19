@@ -14,9 +14,8 @@ export function OutcomeFilter() {
   const { outcome_filter, setFilter } = useFilterStore();
 
   const toggle = (id: string) => {
-    const next = outcome_filter.includes(id)
-      ? outcome_filter.filter((x) => x !== id)
-      : [...outcome_filter, id];
+    // Radio-style: clicking the active one deselects; clicking another selects only it
+    const next = outcome_filter.includes(id) ? [] : [id];
     setFilter("outcome_filter", next);
   };
 

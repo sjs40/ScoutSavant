@@ -9,7 +9,7 @@ _COLS = [
     "at_bat_number", "pitch_number", "pitch_type",
     "release_speed", "pfx_x", "pfx_z", "spin_rate",
     "plate_x", "plate_z", "balls", "strikes", "count",
-    "stand", "inning", "description", "events",
+    "stand", "inning", "zone", "description", "events",
     "estimated_ba_using_speedangle", "estimated_woba_using_speedangle",
     "launch_speed", "launch_angle", "delta_run_exp",
     "is_whiff", "is_chase", "is_csw", "is_hard_hit", "is_barrel",

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useQueries } from "@tanstack/react-query";
 import { useFilterStore } from "../store/filterStore";
 import { fetchPitches } from "../api/pitches";
 import { fetchSummary } from "../api/summary";
@@ -13,66 +13,81 @@ import type {
   CountCellRow,
 } from "../types/api";
 
-interface DashboardData {
-  summary: SummaryResponse | null;
-  pitches: PitchesResponse | null;
-  usage: UsageResponse | null;
-  sequences: SequencesResponse | null;
-  counts: CountCellRow[] | null;
-  loading: boolean;
-  errors: Record<string, string | null>;
-}
-
-export function useDashboardData(): DashboardData {
+export function useDashboardData() {
   const store = useFilterStore();
-  const trigger = store._trigger;
-  const abortRef = useRef<AbortController | null>(null);
+  const enabled = !!store.pitcher_id;
 
-  const [summary, setSummary] = useState<SummaryResponse | null>(null);
-  const [pitches, setPitches] = useState<PitchesResponse | null>(null);
-  const [usage, setUsage] = useState<UsageResponse | null>(null);
-  const [sequences, setSequences] = useState<SequencesResponse | null>(null);
-  const [counts, setCounts] = useState<CountCellRow[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const queryKey = {
+    pitcher_id: store.pitcher_id,
+    mode: store.mode,
+    season: store.season,
+    game_pk: store.game_pk,
+    pitch_type: store.pitch_type,
+    stand: store.stand,
+    count: store.count,
+    inning_min: store.inning_min,
+    inning_max: store.inning_max,
+    times_through_order: store.times_through_order,
+    outcome_filter: store.outcome_filter,
+  };
 
-  useEffect(() => {
-    if (!store.pitcher_id) return;
+  const filters = store;
 
-    abortRef.current?.abort();
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
+  const [summaryQ, pitchesQ, usageQ, sequencesQ, countsQ] = useQueries({
+    queries: [
+      {
+        queryKey: ["summary", queryKey],
+        queryFn: () => fetchSummary(filters),
+        enabled,
+        staleTime: 30_000,
+      },
+      {
+        queryKey: ["pitches", queryKey],
+        queryFn: () => fetchPitches(filters),
+        enabled,
+        staleTime: 30_000,
+      },
+      {
+        queryKey: ["usage", queryKey],
+        queryFn: () => fetchUsage(filters),
+        enabled,
+        staleTime: 30_000,
+      },
+      {
+        queryKey: ["sequences", queryKey],
+        queryFn: () => fetchSequences(filters),
+        enabled,
+        staleTime: 30_000,
+      },
+      {
+        queryKey: ["counts", queryKey],
+        queryFn: () => fetchCounts(filters),
+        enabled,
+        staleTime: 30_000,
+      },
+    ],
+  });
 
-    setLoading(true);
+  const isInitialLoading = enabled && (
+    summaryQ.isLoading || pitchesQ.isLoading || usageQ.isLoading ||
+    sequencesQ.isLoading || countsQ.isLoading
+  );
 
-    const filters = { ...store };
-
-    const handle = <T>(
-      key: string,
-      promise: Promise<T>,
-      setter: (v: T) => void
-    ) =>
-      promise
-        .then((v) => {
-          setter(v);
-          setErrors((e) => ({ ...e, [key]: null }));
-        })
-        .catch((err) => {
-          if (err.name !== "AbortError") {
-            setErrors((e) => ({ ...e, [key]: err.message }));
-          }
-        });
-
-    Promise.allSettled([
-      handle("summary", fetchSummary(filters, ctrl.signal), setSummary),
-      handle("pitches", fetchPitches(filters, ctrl.signal), setPitches),
-      handle("usage", fetchUsage(filters, ctrl.signal), setUsage),
-      handle("sequences", fetchSequences(filters, ctrl.signal), setSequences),
-      handle("counts", fetchCounts(filters, ctrl.signal), setCounts),
-    ]).finally(() => setLoading(false));
-
-    return () => ctrl.abort();
-  }, [trigger]);
-
-  return { summary, pitches, usage, sequences, counts, loading, errors };
+  return {
+    summary: summaryQ.data as SummaryResponse | undefined,
+    pitches: pitchesQ.data as PitchesResponse | undefined,
+    usage: usageQ.data as UsageResponse | undefined,
+    sequences: sequencesQ.data as SequencesResponse | undefined,
+    counts: countsQ.data as CountCellRow[] | undefined,
+    isLoading: summaryQ.isFetching || pitchesQ.isFetching || usageQ.isFetching ||
+      sequencesQ.isFetching || countsQ.isFetching,
+    isInitialLoading,
+    errors: {
+      summary: summaryQ.error ? String(summaryQ.error) : null,
+      pitches: pitchesQ.error ? String(pitchesQ.error) : null,
+      usage: usageQ.error ? String(usageQ.error) : null,
+      sequences: sequencesQ.error ? String(sequencesQ.error) : null,
+      counts: countsQ.error ? String(countsQ.error) : null,
+    },
+  };
 }

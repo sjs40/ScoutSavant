@@ -20,8 +20,14 @@ export function PitchDot({ pitch, onEnter, onLeave }: Props) {
   const cx = toSvgX(pitch.plate_x);
   const cy = toSvgY(pitch.plate_z);
   const color = pitchColor(pitch.pitch_type);
+  const partial = pitch.pa_complete === false;
 
-  const handlers = {
+  const baseProps = {
+    fill: color,
+    fillOpacity: partial ? 0.5 : 0.85,
+    stroke: partial ? color : "#0a0c0f",
+    strokeWidth: partial ? 1 : 0.5,
+    strokeDasharray: partial ? "2,2" : undefined,
     onMouseEnter: () => onEnter(pitch, cx, cy),
     onMouseLeave: onLeave,
   };
@@ -30,11 +36,7 @@ export function PitchDot({ pitch, onEnter, onLeave }: Props) {
     return (
       <polygon
         points={`${cx},${cy - R - 1} ${cx + R + 1},${cy + R} ${cx - R - 1},${cy + R}`}
-        fill={color}
-        fillOpacity={0.85}
-        stroke="#0a0c0f"
-        strokeWidth={0.5}
-        {...handlers}
+        {...baseProps}
       />
     );
   }
@@ -43,11 +45,7 @@ export function PitchDot({ pitch, onEnter, onLeave }: Props) {
     return (
       <polygon
         points={diamond(cx, cy, R)}
-        fill={color}
-        fillOpacity={0.85}
-        stroke="#0a0c0f"
-        strokeWidth={0.5}
-        {...handlers}
+        {...baseProps}
       />
     );
   }
@@ -59,11 +57,7 @@ export function PitchDot({ pitch, onEnter, onLeave }: Props) {
         y={cy - R}
         width={R * 2}
         height={R * 2}
-        fill={color}
-        fillOpacity={0.85}
-        stroke="#0a0c0f"
-        strokeWidth={0.5}
-        {...handlers}
+        {...baseProps}
       />
     );
   }
@@ -73,11 +67,8 @@ export function PitchDot({ pitch, onEnter, onLeave }: Props) {
       cx={cx}
       cy={cy}
       r={R}
-      fill={color}
-      fillOpacity={0.7}
-      stroke="#0a0c0f"
-      strokeWidth={0.5}
-      {...handlers}
+      {...baseProps}
+      fillOpacity={partial ? 0.5 : 0.7}
     />
   );
 }

@@ -17,9 +17,12 @@ def query(p: FilterParams) -> dict:
             f"""
             SELECT
                 pitch_type,
-                COUNT(*) AS cnt,
-                SUM(CAST(is_whiff AS INTEGER)) AS whiffs,
-                AVG(release_speed) AS avg_velo
+                COUNT(*)                                                AS cnt,
+                SUM(CAST(is_whiff AS INTEGER))                          AS whiffs,
+                AVG(release_speed)                                      AS avg_velo,
+                SUM(CAST(is_csw AS INTEGER))                            AS csw,
+                SUM(CASE WHEN zone >= 1 AND zone <= 9 THEN 1 ELSE 0 END) AS in_zone,
+                AVG(estimated_woba_using_speedangle)                    AS xwoba
             FROM {tbl} WHERE {where}
             GROUP BY pitch_type
             ORDER BY cnt DESC
@@ -56,6 +59,9 @@ def query(p: FilterParams) -> dict:
             "usage_pct": round(r[1] / total, 4) if total else 0,
             "whiff_pct": round(r[2] / r[1], 4) if r[1] else None,
             "avg_velocity": round(r[3], 1) if r[3] is not None else None,
+            "csw_pct": round(r[4] / r[1], 4) if r[1] else None,
+            "zone_pct": round(r[5] / r[1], 4) if r[1] else None,
+            "xwoba": round(r[6], 3) if r[6] is not None else None,
         }
         for r in by_pitch_rows
     ]

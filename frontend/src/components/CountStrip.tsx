@@ -4,7 +4,7 @@ import { useFilterStore } from "../store/filterStore";
 
 const MAX_HEIGHT = 48;
 
-export function CountStrip({ data }: { data: CountCellRow[] | null }) {
+export function CountStrip({ data }: { data: CountCellRow[] | null | undefined }) {
   const { count: activeCount, setFilter } = useFilterStore();
 
   const cellMap = Object.fromEntries((data ?? []).map((c) => [c.count, c]));
@@ -24,7 +24,7 @@ export function CountStrip({ data }: { data: CountCellRow[] | null }) {
         {ALL_COUNTS.map((count) => {
           const cell = cellMap[count];
           const barH = cell ? (cell.pitch_count / maxCount) * MAX_HEIGHT : 0;
-          const dominant = cell?.by_pitch_type[0];
+          const dominantType = cell?.dominant_pitch_type ?? cell?.by_pitch_type?.[0]?.pitch_type ?? null;
           const active = activeCount.includes(count);
 
           return (
@@ -40,8 +40,8 @@ export function CountStrip({ data }: { data: CountCellRow[] | null }) {
                 style={{
                   height: barH,
                   minHeight: cell ? 2 : 0,
-                  backgroundColor: dominant
-                    ? pitchColor(dominant.pitch_type)
+                  backgroundColor: dominantType
+                    ? pitchColor(dominantType)
                     : "#252b35",
                   outline: active ? "1px solid #00d4ff" : "none",
                 }}

@@ -4,12 +4,32 @@
 
 :root {
   color-scheme: dark;
+
+  --bg:       #0a0c0f;
+  --surface:  #111418;
+  --surface2: #171b21;
+  --surface3: #1e232b;
+  --border:   #252b35;
+  --accent:   #00d4ff;
+  --text:     #e8eaed;
+  --text2:    #8b95a3;
+  --text3:    #545f6e;
+  --green:    #22c55e;
+  --red:      #ef4444;
+
+  --pitch-ff: #3b82f6;
+  --pitch-sl: #ef4444;
+  --pitch-ch: #22c55e;
+  --pitch-cu: #a855f7;
+  --pitch-si: #06b6d4;
+  --pitch-fc: #f97316;
+  --pitch-fs: #ec4899;
 }
 
 body {
   margin: 0;
-  background-color: #0a0c0f;
-  color: #e8eaed;
+  background-color: var(--bg);
+  color: var(--text);
   font-family: "IBM Plex Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
