@@ -1,0 +1,9 @@
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+pybaseball>=2.2.7
+mlb-statsapi>=1.7.2
+duckdb>=0.10.3
+pandas>=2.2.0
+pyarrow>=16.0.0
+pydantic>=2.7.0
+python-dotenv>=1.0.0
