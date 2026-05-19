@@ -1,0 +1,38 @@
+export interface Pitch {
+  pitch_id: string;
+  pitcher_id: number;
+  season: number;
+  game_pk: number;
+  game_date: string;
+  at_bat_number: number;
+  pitch_number: number;
+  pitch_type: string | null;
+  release_speed: number | null;
+  pfx_x: number | null;
+  pfx_z: number | null;
+  spin_rate: number | null;
+  plate_x: number | null;
+  plate_z: number | null;
+  balls: number;
+  strikes: number;
+  count: string;
+  stand: "L" | "R" | null;
+  inning: number | null;
+  description: string | null;
+  events: string | null;
+  estimated_ba_using_speedangle: number | null;
+  estimated_woba_using_speedangle: number | null;
+  launch_speed: number | null;
+  launch_angle: number | null;
+  delta_run_exp: number | null;
+  is_whiff: boolean;
+  is_chase: boolean;
+  is_csw: boolean;
+  is_hard_hit: boolean;
+  is_barrel: boolean;
+  sequence_prev_pitch_type: string | null;
+  sequence_prev_location_x: number | null;
+  sequence_prev_location_z: number | null;
+  times_through_order: number | null;
+  pa_complete: boolean;
+}
